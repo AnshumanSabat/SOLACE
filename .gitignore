@@ -1,0 +1,38 @@
+# Private (kept locally, not published)
+backend/
+ai-avatar/
+brain.md
+.pre-commit-config.yaml
+.python-version
+docs/*
+!docs/images/
+
+# IDE
+.vscode
+.idea
+
+# Python
+.venv
+venv
+backend/venv
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+backend/.env
+frontend/.env.local
+
+# Generated
+backend/encoded_image.png
+
+# Node
+frontend/node_modules
+ai-avatar/ai-avatar-backend/node_modules
+ai-avatar/ai-avatar-frontend/node_modules
+
+# Google
+google-api.json
+
+# OS
+.DS_Store
