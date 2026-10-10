@@ -174,6 +174,11 @@ export default function RealtimeList() {
         const response = await fetch('/api/getPosts');
         const result = await response.json();
         console.log(result);
+        if (!Array.isArray(result)) {
+          console.warn('Backend server returned non-array response:', result);
+          setData([]);
+          return;
+        }
         const enrichedData = await Promise.all(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result.map(async (post: any) => {

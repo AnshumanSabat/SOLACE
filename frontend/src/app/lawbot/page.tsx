@@ -1,17 +1,18 @@
 'use client';
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '../../components/ui/input';
-import { ArrowUp, Scale, Triangle, Check, Fingerprint } from 'lucide-react';
+import { ArrowUp, Scale, FileText, ShieldAlert, HeartHandshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useClerk } from '@clerk/nextjs';
 import Image from 'next/image';
-import modelImage from '../../assets/modelLogo.png';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
 
 const ChatSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty'),
@@ -20,16 +21,10 @@ const ChatSchema = z.object({
 type ChatFormValues = z.infer<typeof ChatSchema>;
 
 const promptSuggestions = [
-  { text: 'Indian Law', icon: <Scale className="text-gray-700" size={16} /> },
-  {
-    text: 'Indian Law IPC 320',
-    icon: <Triangle className="text-gray-700" size={16} />,
-  },
-  { text: 'Women Rights', icon: <Check className="text-gray-700" size={16} /> },
-  {
-    text: 'Women Safety',
-    icon: <Fingerprint className="text-gray-700" size={16} />,
-  },
+  { text: 'Emergency Protective Orders', icon: <Scale className="text-[#3B2630]" size={16} /> },
+  { text: 'Custody Rights During Crisis', icon: <FileText className="text-[#3B2630]" size={16} /> },
+  { text: 'Preserving Evidence Privately', icon: <ShieldAlert className="text-[#3B2630]" size={16} /> },
+  { text: 'Domestic Abuse Legal Statutes', icon: <HeartHandshake className="text-[#3B2630]" size={16} /> },
 ];
 
 function Page() {
@@ -40,10 +35,10 @@ function Page() {
     }[]
   >([]);
 
-  const typingText = useTypingText('What can I help you with?');
+  const typingText = useTypingText('What legal guidance can we help clarify?');
   const [isThinking, setIsThinking] = React.useState<boolean>(false);
-  // Custom hook for typing effect
-  function useTypingText(text: string, speed: number = 100) {
+
+  function useTypingText(text: string, speed: number = 80) {
     const [displayedText, setDisplayedText] = React.useState('');
 
     React.useEffect(() => {
@@ -71,15 +66,26 @@ function Page() {
     form.reset();
     setIsThinking(true);
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({ userInput: data.message }),
-      headers: { 'Content-Type': 'application/json' },
-    });
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ userInput: data.message }),
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    const result = await response.json();
-    setMessages((prev) => [...prev, { text: result.reply, isUser: false }]);
-    setIsThinking(false);
+      const result = await response.json();
+      setMessages((prev) => [...prev, { text: result.reply, isUser: false }]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: 'Unable to reach the legal knowledge base right now. Please refer to verified emergency helplines if in immediate need.',
+          isUser: false,
+        },
+      ]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   const handlePromptClick = (prompt: string) => {
@@ -87,45 +93,63 @@ function Page() {
     form.handleSubmit(onSubmit)();
   };
 
+  // EMPTY STATE / ONBOARDING SCREEN
   if (messages.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-extrabold tracking-wide text-gray-700 mb-5">
+      <div className="flex-1 relative flex flex-col items-center justify-center p-4 lg:p-12 w-full text-center overflow-hidden">
+
+        {/* Illustration — absolute top-right, ~40% viewport width */}
+        <div className="pointer-events-none select-none absolute top-0 right-0 w-[40vw] h-auto">
+          <Image
+            src="/images/lawbot-editorial.svg"
+            alt="Legal empowerment illustration"
+            width={800}
+            height={900}
+            className="w-full h-auto opacity-90"
+            priority
+          />
+        </div>
+
+        <h1 className="font-serif text-3xl sm:text-4xl text-[#3B2630] font-normal tracking-tight mb-3 relative z-10">
           {typingText}
         </h1>
+        <p className="font-sans text-sm sm:text-base text-[#766B68] font-light max-w-xl mx-auto mb-8 relative z-10">
+          Confidential, plain-language guidance on domestic violence statutes, protective orders, and custody rights—without legal jargon.
+        </p>
+
+        {/* Input Form */}
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex items-center max-w-3xl w-full gap-2"
+          className="flex items-center max-w-2xl w-full gap-2 relative z-10"
         >
-          <div className="rounded-3xl flex w-full items-center bg-slate-100 border border-gray-300 p-1">
+          <div className="rounded-full flex w-full items-center bg-[#FFF9F4] border border-[#E5DCD4] p-1.5 shadow-sm focus-within:border-[#3B2630] transition-colors">
             <Input
               {...form.register('message')}
-              className="focus-within:ring-0 ring-offset-transparent text-lg focus-visible:ring-0 bg-slate-100 rounded-3xl focus-visible:ring-transparent p-5 border-none"
-              placeholder="Chat with Law Bot"
+              className="text-base text-[#3B2630] bg-transparent rounded-full px-5 py-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#766B68]/60"
+              placeholder="Ask about restraining orders, custody, or legal rights..."
               autoComplete="off"
             />
             <Button
-              className="bg-slate-300 rounded-full text-black cursor-pointer"
+              className="bg-[#3B2630] hover:bg-[#523744] text-[#FFF9F4] rounded-full w-10 h-10 p-0 flex items-center justify-center cursor-pointer transition-colors"
               disabled={isThinking || !form.formState.isValid}
               type="submit"
+              aria-label="Send query"
             >
-              <ArrowUp size={24} />
+              <ArrowUp size={20} />
             </Button>
           </div>
         </form>
-        <div className="mt-5 flex items-center gap-5">
+
+        {/* Suggested Queries */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 relative z-10">
           {promptSuggestions.map((prompt, index) => (
             <button
               key={index}
-              onClick={() =>
-                handlePromptClick(
-                  typeof prompt === 'string' ? prompt : prompt.text
-                )
-              }
-              className="flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 text-sm hover:bg-gray-100"
+              onClick={() => handlePromptClick(prompt.text)}
+              className="flex items-center gap-2 bg-[#FFF9F4] border border-[#E5DCD4] text-[#3B2630] rounded-full px-4 py-2 text-xs font-sans font-medium hover:border-[#3B2630] hover:bg-[#FAF0EC] transition-all"
             >
-              {typeof prompt !== 'string' && prompt.icon}
-              {typeof prompt === 'string' ? prompt : prompt.text}
+              {prompt.icon}
+              <span>{prompt.text}</span>
             </button>
           ))}
         </div>
@@ -133,93 +157,88 @@ function Page() {
     );
   }
 
+  // ACTIVE CHAT VIEW
   return (
-    <div className="flex flex-col h-full items-center justify-center max-w-3xl w-full mx-auto ">
-      <div className="w-full overflow-y-auto rounded-md custom-scrollbar ">
-        <div className="flex flex-col gap-2 h-[80vh] overflow-y-auto custom-scrollbar p-4">
-          {messages.length > 0 &&
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start gap-2 ${
-                  message.isUser ? 'justify-end' : ''
-                }`}
-              >
-                {!message.isUser && (
-                  <Image
-                    src={modelImage}
-                    alt="Bot Avatar"
-                    width={45}
-                    height={45}
-                    className="rounded-full"
-                  />
-                )}
-                <div
-                  className={`py-2 px-3 rounded-md max-w-[70%] ${
-                    message.isUser
-                      ? 'bg-green-500 text-white self-end'
-                      : 'bg-gray-300 text-black self-start'
-                  }`}
-                >
-                  {message.isUser ? (
-                    message.text
-                  ) : (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.text}
-                    </ReactMarkdown>
-                  )}
-                </div>
-
-                {message.isUser && user && (
-                  <Image
-                    src={user?.imageUrl || ''}
-                    alt="User Avatar"
-                    className="w-8 h-8 rounded-full"
-                    width={32}
-                    height={32}
-                  />
-                )}
-                {message.isUser && !user && (
-                  <div className="rounded-full border shadow-sm h-10 w-10 flex items-center justify-center ">
-                    <h1 className="font-semibold">G</h1>
-                  </div>
-                )}
+    <div className="flex flex-col flex-1 w-full p-4 lg:px-12 justify-between">
+      <div className="w-full flex-1 overflow-y-auto py-4 space-y-4">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex items-start gap-3 ${message.isUser ? 'justify-end' : 'justify-start'}`}
+          >
+            {!message.isUser && (
+              <div className="w-9 h-9 rounded-full overflow-hidden border border-[#E5DCD4] bg-[#FFF9F4] flex-shrink-0 flex items-center justify-center">
+                <Image
+                  src="/solace-logo.png"
+                  alt="Solace Legal Agent"
+                  width={36}
+                  height={36}
+                  className="object-cover"
+                />
               </div>
-            ))}
+            )}
 
-          {isThinking && (
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      {messages.length > 0 && (
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex items-center max-w-3xl w-full gap-2"
-        >
-          <div className="rounded-3xl flex w-full items-center border bg-slate-100 border-gray-300 p-1">
-            <Input
-              {...form.register('message')}
-              className="focus-within:ring-0 ring-offset-transparent text-lg bg-slate-100 focus-visible:ring-0 rounded-3xl focus-visible:ring-transparent p-5 border-none"
-              placeholder="Chat with Law Bot"
-              autoComplete="off"
-            />
-            <Button
-              className="bg-slate-300 rounded-full text-black cursor-pointer"
-              disabled={isThinking || !form.formState.isValid}
-              type="submit"
+            <div
+              className={`p-4 rounded-2xl max-w-[80%] text-sm font-sans leading-relaxed ${
+                message.isUser
+                  ? 'bg-[#3B2630] text-[#FFF9F4] rounded-tr-none'
+                  : 'bg-[#EFF3EB] text-[#3B2630] border border-[#E1E7D9] rounded-tl-none'
+              }`}
             >
-              <ArrowUp size={24} />
-            </Button>
+              {message.isUser ? (
+                message.text
+              ) : (
+                <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-serif">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.text}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+
+            {message.isUser && (
+              <div className="w-8 h-8 rounded-full bg-[#F3DCD4] border border-[#DEB3A5] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#3B2630]">
+                {user?.firstName?.[0] || 'U'}
+              </div>
+            )}
           </div>
-        </form>
-      )}
+        ))}
+
+        {isThinking && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#FFF9F4] border border-[#E5DCD4] flex items-center justify-center">
+              <span className="w-2 h-2 rounded-full bg-[#C2CEB5] animate-ping" />
+            </div>
+            <div className="p-4 rounded-2xl bg-[#EFF3EB] border border-[#E1E7D9] space-y-2">
+              <Skeleton className="h-3 w-48 bg-[#E1E7D9]" />
+              <Skeleton className="h-3 w-32 bg-[#E1E7D9]" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input Row */}
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex items-center w-full gap-2 pt-4 border-t border-[#E5DCD4]"
+      >
+        <div className="rounded-full flex w-full items-center bg-[#FFF9F4] border border-[#E5DCD4] p-1.5 shadow-sm focus-within:border-[#3B2630] transition-colors">
+          <Input
+            {...form.register('message')}
+            className="text-sm sm:text-base text-[#3B2630] bg-transparent rounded-full px-4 py-2 border-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-[#766B68]/60"
+            placeholder="Type your question about rights, protection orders..."
+            autoComplete="off"
+          />
+          <Button
+            className="bg-[#3B2630] hover:bg-[#523744] text-[#FFF9F4] rounded-full w-9 h-9 p-0 flex items-center justify-center cursor-pointer transition-colors"
+            disabled={isThinking || !form.formState.isValid}
+            type="submit"
+            aria-label="Send message"
+          >
+            <ArrowUp size={18} />
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

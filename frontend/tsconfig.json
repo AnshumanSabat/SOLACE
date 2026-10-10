@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@clerk/nextjs": ["./src/lib/mock-clerk"],
+      "@clerk/nextjs/server": ["./src/lib/mock-clerk-server"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

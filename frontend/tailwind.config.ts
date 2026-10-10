@@ -11,12 +11,33 @@ const config = {
   prefix: '',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        solace: {
+          bg: '#F8F1EA',
+          surface: '#FFF9F4',
+          blush: '#F3DCD4',
+          'blush-soft': '#FAF0EC',
+          'blush-deep': '#DEB3A5',
+          lavender: '#D9D0E8',
+          'lavender-soft': '#ECE7F4',
+          'lavender-deep': '#B9A8D4',
+          sage: '#E1E7D9',
+          'sage-soft': '#EFF3EB',
+          'sage-deep': '#C2CEB5',
+          primary: '#3B2630',
+          secondary: '#766B68',
+          divider: '#E5DCD4',
+          muted: '#8D817E',
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
